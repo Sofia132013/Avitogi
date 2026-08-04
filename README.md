@@ -195,7 +195,7 @@ docker compose down
 ## Команда и вклад участников
 
 | Участник | Роль |
-|---|---|---|
+|---|---|
 | **[Имя участника 1]** | Backend Developer | 
 | **[Имя участника 2]** | Backend Developer |
 | **[Имя участника 3]** | Backend Developer |
