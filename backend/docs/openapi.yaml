@@ -1,0 +1,23 @@
+openapi: 3.0.3
+
+info:
+  title: Avitogi Backend API
+  version: 0.1.0
+  description: API для backend сервиса проекта Авитоги.
+
+paths:
+  /health:
+    get:
+      summary: Проверка работы backend
+      description: Возвращает статус сервера.
+      responses:
+        "200":
+          description: Backend работает
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
