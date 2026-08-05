@@ -196,26 +196,34 @@ docker compose down
 
 | Участник | Роль |
 |---|---|
-| **[Имя участника 1]** | Backend Developer | 
-| **[Имя участника 2]** | Backend Developer |
-| **[Имя участника 3]** | Backend Developer |
-| **[Имя участника 4]** | Frontend Developer | 
+| **[Бакурин Максим]** | Backend Developer | 
+| **[Николаева Арина]** | Backend Developer |
+| **[Селютина Софья]** | Backend Developer |
+| **[Юсупов Тимур]** | Frontend Developer | 
 
 ### Выполненная работа
 
-#### [Имя участника 1]
+#### [Бакурин Максим]
 
 ...
 
-#### [Имя участника 2]
+#### [Николаева Арина]
 
 ...
 
-#### [Имя участника 3]
+#### [Селютина Софья]
 
-...
+Базовый backend-каркас проекта:
 
-#### [Имя участника 4]
+- настройка запуска Go backend через HTTP-сервер;
+- добавление endpoint `GET /health` для проверки работы backend;
+- подключение PostgreSQL;
+- настройка CORS, чтобы frontend мог обращаться к backend по HTTP;
+- добавление `Dockerfile` для сборки backend;
+- добавление `docker-compose.yml` для запуска backend и PostgreSQL;
+- добавление health-check PostgreSQL в Docker Compose;
+
+#### [Юсупов Тимур]
 
 ...
 
