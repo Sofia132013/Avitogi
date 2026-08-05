@@ -1,0 +1,8 @@
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    registered_at TIMESTAMP NOT NULL,
+    rating INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
