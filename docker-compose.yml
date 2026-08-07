@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: avitogi-postgres
+    environment:
+      POSTGRES_USER: avitogi
+      POSTGRES_PASSWORD: avitogi
+      POSTGRES_DB: avitogi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avitogi -d avitogi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: avitogi-backend
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://avitogi:avitogi@postgres:5432/avitogi?sslmode=disable
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

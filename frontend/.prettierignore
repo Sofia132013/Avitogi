@@ -1,0 +1,4 @@
+dist/
+node_modules/
+.bun-cache/
+src/routeTree.gen.ts
