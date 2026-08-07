@@ -1,0 +1,13 @@
+@theme {
+  --color-surface: #ffffff;
+  --color-foreground: #101114;
+  --color-muted: #6b6f79;
+  --color-line: #e4e6eb;
+  --color-recap: #12121a;
+  --color-accent-blue: #00aaff;
+  --color-accent-green: #04e061;
+  --color-accent-purple: #a169f7;
+  --color-accent-yellow: #ffd84d;
+  --color-danger: #ff4053;
+  --font-sans: Arial, Helvetica, sans-serif;
+}
