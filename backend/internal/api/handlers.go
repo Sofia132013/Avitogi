@@ -32,7 +32,7 @@ func metricsHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		metrics := recap.CalculateMetrics(recap.EventsFromAggregates(events), userID)
+		metrics := recap.CalculateMetrics(recap.EventsFromDB(events), userID)
 		writeJSON(w, http.StatusOK, metrics)
 	}
 }
