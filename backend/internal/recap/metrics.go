@@ -1,13 +1,18 @@
 package recap
 
-import "time"
+import (
+	"strconv"
+	"time"
+
+	appinternal "avitogi/backend/internal"
+)
 
 const (
-	EventViewAd         = "view_ad"
-	EventViewCategory   = "view_category"
-	EventAddToFavorites = "add_to_favorites"
-	EventStartContact   = "start_contact"
-	EventCreateAd       = "create_ad"
+	EventViewAd         = "listing_viewed"
+	EventViewCategory   = "category_viewed"
+	EventAddToFavorites = "favorite_added"
+	EventStartContact   = "seller_contact_started"
+	EventCreateAd       = "listing_published"
 )
 
 type Event struct {
@@ -26,6 +31,24 @@ type Metrics struct {
 	ContactsStarted  int    `json:"contacts_started"`
 	CreatedAds       int    `json:"created_ads"`
 	MostActiveMonth  string `json:"most_active_month"`
+}
+
+func EventsFromAggregates(events []appinternal.Event) []Event {
+	// приводим агрегированные события к формату, который использует расчет метрик
+	result := []Event{}
+
+	for _, event := range events {
+		for i := 0; i < event.Amount; i++ {
+			result = append(result, Event{
+				UserID:    event.UserID,
+				Type:      event.Type,
+				Timestamp: time.Date(event.Year, time.January, 1, 0, 0, 0, 0, time.UTC),
+				EventID:   strconv.Itoa(event.ID) + "-" + strconv.Itoa(i),
+			})
+		}
+	}
+
+	return result
 }
 
 func CalculateMetrics(events []Event, userID int) Metrics {
