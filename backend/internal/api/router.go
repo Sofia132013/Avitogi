@@ -10,8 +10,11 @@ func NewRouter() *http.ServeMux {
 
 	// регистрируем handler для каждого route
 	mux.HandleFunc("GET /health", healthHandler)
+	mux.HandleFunc("GET /metrics", metricsHandler)
+	mux.HandleFunc("GET /profiles", profilesHandler)
+	mux.HandleFunc("GET /profiles/{id}", profileByIDHandler)
 
-	// возвращаем mux, чтобы использовать его в main 
+	// возвращаем mux, чтобы использовать его в main
 	return mux
 }
 
