@@ -1,4 +1,4 @@
-CREATE TABLE listings (
+CREATE TABLE IF NOT EXISTS listings (
     id INTEGER PRIMARY KEY,
     owner_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,

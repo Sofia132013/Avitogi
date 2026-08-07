@@ -34,7 +34,7 @@ func main() {
 
 	log.Println("Database connection is OK")
 
-	mux := api.NewRouter()
+	mux := api.NewRouter(db)
 
 	log.Println("Server is running on http://localhost:" + config.Port)
 

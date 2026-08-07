@@ -8,6 +8,14 @@ services:
       POSTGRES_DB: avitogi
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/001_create_users_table.sql:/docker-entrypoint-initdb.d/001_create_users_table.sql:ro
+      - ./backend/database/002_create_categories_table.sql:/docker-entrypoint-initdb.d/002_create_categories_table.sql:ro
+      - ./backend/database/003_create_listings_table.sql:/docker-entrypoint-initdb.d/003_create_listings_table.sql:ro
+      - ./backend/database/004_create_events_table.sql:/docker-entrypoint-initdb.d/004_create_events_table.sql:ro
+      - ./backend/seeds/users.sql:/docker-entrypoint-initdb.d/101_seed_users.sql:ro
+      - ./backend/seeds/categories.sql:/docker-entrypoint-initdb.d/102_seed_categories.sql:ro
+      - ./backend/seeds/listings.sql:/docker-entrypoint-initdb.d/103_seed_listings.sql:ro
+      - ./backend/seeds/events.sql:/docker-entrypoint-initdb.d/104_seed_events.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U avitogi -d avitogi"]
       interval: 5s
@@ -26,6 +34,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: avitogi-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

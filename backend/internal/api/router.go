@@ -1,18 +1,19 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 )
 
-func NewRouter() *http.ServeMux {
+func NewRouter(db *sql.DB) *http.ServeMux {
 	// создаем новый server mux для обработки HTTP запросов
 	mux := http.NewServeMux()
 
 	// регистрируем handler для каждого route
 	mux.HandleFunc("GET /health", healthHandler)
-	mux.HandleFunc("GET /metrics", metricsHandler)
-	mux.HandleFunc("GET /profiles", profilesHandler)
-	mux.HandleFunc("GET /profiles/{id}", profileByIDHandler)
+	mux.HandleFunc("GET /metrics", metricsHandler(db))
+	mux.HandleFunc("GET /profiles", profilesHandler(db))
+	mux.HandleFunc("GET /profiles/{id}", profileByIDHandler(db))
 
 	// возвращаем mux, чтобы использовать его в main
 	return mux
