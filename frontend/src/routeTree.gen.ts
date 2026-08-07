@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteRouteImport } from './routes/_profile/route'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as ProfileIndexRouteImport } from './routes/_profile/index'
+import { Route as ProfileRecapIndexRouteImport } from './routes/_profile/recap/index'
+import { Route as ProfileRecapLoadingRouteImport } from './routes/_profile/recap/loading'
 
 const ProfileRouteRoute = ProfileRouteRouteImport.update({
   id: '/_profile',
@@ -27,27 +29,49 @@ const ProfileIndexRoute = ProfileIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProfileRouteRoute,
 } as any)
+const ProfileRecapIndexRoute = ProfileRecapIndexRouteImport.update({
+  id: '/recap/',
+  path: '/recap/',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileRecapLoadingRoute = ProfileRecapLoadingRouteImport.update({
+  id: '/recap/loading',
+  path: '/recap/loading',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ProfileIndexRoute
   '/profiles': typeof ProfilesRoute
+  '/recap/loading': typeof ProfileRecapLoadingRoute
+  '/recap/': typeof ProfileRecapIndexRoute
 }
 export interface FileRoutesByTo {
   '/profiles': typeof ProfilesRoute
   '/': typeof ProfileIndexRoute
+  '/recap/loading': typeof ProfileRecapLoadingRoute
+  '/recap': typeof ProfileRecapIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_profile': typeof ProfileRouteRouteWithChildren
   '/profiles': typeof ProfilesRoute
   '/_profile/': typeof ProfileIndexRoute
+  '/_profile/recap/loading': typeof ProfileRecapLoadingRoute
+  '/_profile/recap/': typeof ProfileRecapIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profiles'
+  fullPaths: '/' | '/profiles' | '/recap/loading' | '/recap/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/profiles' | '/'
-  id: '__root__' | '/_profile' | '/profiles' | '/_profile/'
+  to: '/profiles' | '/' | '/recap/loading' | '/recap'
+  id:
+    | '__root__'
+    | '/_profile'
+    | '/profiles'
+    | '/_profile/'
+    | '/_profile/recap/loading'
+    | '/_profile/recap/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +102,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileIndexRouteImport
       parentRoute: typeof ProfileRouteRoute
     }
+    '/_profile/recap/': {
+      id: '/_profile/recap/'
+      path: '/recap'
+      fullPath: '/recap/'
+      preLoaderRoute: typeof ProfileRecapIndexRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/_profile/recap/loading': {
+      id: '/_profile/recap/loading'
+      path: '/recap/loading'
+      fullPath: '/recap/loading'
+      preLoaderRoute: typeof ProfileRecapLoadingRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
   }
 }
 
 interface ProfileRouteRouteChildren {
   ProfileIndexRoute: typeof ProfileIndexRoute
+  ProfileRecapLoadingRoute: typeof ProfileRecapLoadingRoute
+  ProfileRecapIndexRoute: typeof ProfileRecapIndexRoute
 }
 
 const ProfileRouteRouteChildren: ProfileRouteRouteChildren = {
   ProfileIndexRoute: ProfileIndexRoute,
+  ProfileRecapLoadingRoute: ProfileRecapLoadingRoute,
+  ProfileRecapIndexRoute: ProfileRecapIndexRoute,
 }
 
 const ProfileRouteRouteWithChildren = ProfileRouteRoute._addFileChildren(
