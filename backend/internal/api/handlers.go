@@ -37,6 +37,31 @@ func metricsHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func recapHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// берем user_id из query параметра /recap?user_id=1
+		userIDParam := r.URL.Query().Get("user_id")
+		if userIDParam == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "user_id is required"})
+			return
+		}
+
+		userID, err := strconv.Atoi(userIDParam)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "user_id must be an integer"})
+			return
+		}
+
+		cards, err := recap.BuildUserRecap(db, userID, 2025)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to build recap"})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, cards)
+	}
+}
+
 func profilesHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// возвращаем все тестовые профили для выбора пользователя

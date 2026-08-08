@@ -12,6 +12,7 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	// регистрируем handler для каждого route
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("GET /metrics", metricsHandler(db))
+	mux.HandleFunc("GET /recap", recapHandler(db))
 	mux.HandleFunc("GET /profiles", profilesHandler(db))
 	mux.HandleFunc("GET /profiles/{id}", profileByIDHandler(db))
 
