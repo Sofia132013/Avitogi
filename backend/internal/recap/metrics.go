@@ -17,6 +17,7 @@ const (
 
 type Event struct {
 	UserID    int       `json:"user_id"`
+	ListingID *int      `json:"listing_id,omitempty"`
 	Type      string    `json:"type"`
 	Timestamp time.Time `json:"timestamp"`
 	EventID   string    `json:"event_id,omitempty"`
@@ -40,6 +41,7 @@ func EventsFromDB(events []appinternal.Event) []Event {
 	for _, event := range events {
 		result = append(result, Event{
 			UserID:    event.UserID,
+			ListingID: event.ListingID,
 			Type:      event.Type,
 			Timestamp: event.Timestamp,
 			EventID:   strconv.Itoa(event.ID),
@@ -100,6 +102,27 @@ func CalculateMetrics(events []Event, userID int) Metrics {
 	metrics.MostActiveMonth = mostActiveMonth(eventsByMonth)
 
 	return metrics
+}
+
+// MostActiveMonth определяет самый активный месяц (формат "2006-01") по списку
+// событий. Дубли с одинаковым EventID учитываются один раз, как и в CalculateMetrics.
+func MostActiveMonth(events []Event) string {
+	eventsByMonth := make(map[string]int)
+	seenEventIDs := make(map[string]struct{})
+
+	for _, event := range events {
+		if event.EventID != "" {
+			if _, exists := seenEventIDs[event.EventID]; exists {
+				continue
+			}
+			seenEventIDs[event.EventID] = struct{}{}
+		}
+
+		month := event.Timestamp.Format("2006-01")
+		eventsByMonth[month]++
+	}
+
+	return mostActiveMonth(eventsByMonth)
 }
 
 func mostActiveMonth(eventsByMonth map[string]int) string {

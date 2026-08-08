@@ -146,6 +146,41 @@ func GetEventsByUserAndYear(db *sql.DB, userID int, year int) ([]Event, error) {
 	return events, rows.Err()
 }
 
+// GetListingCategoryMap возвращает соответствие listing_id -> category_id
+// для расчета главной категории по событиям пользователя (TASK-09).
+func GetListingCategoryMap(db *sql.DB) (map[int]int, error) {
+	rows, err := db.Query(`
+		SELECT id, category_id
+		FROM listings
+		ORDER BY id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[int]int)
+	for rows.Next() {
+		var listingID, categoryID int
+		if err := rows.Scan(&listingID, &categoryID); err != nil {
+			return nil, err
+		}
+		result[listingID] = categoryID
+	}
+
+	return result, rows.Err()
+}
+
+// CategoriesByID удобно оборачивает список категорий в map по id,
+// как этого ожидает DetermineMainCategory.
+func CategoriesByID(categories []Category) map[int]Category {
+	result := make(map[int]Category, len(categories))
+	for _, category := range categories {
+		result[category.ID] = category
+	}
+	return result
+}
+
 func stringPtrFromNull(value sql.NullString) *string {
 	if !value.Valid {
 		return nil
