@@ -142,8 +142,34 @@ func TestDetermineMainCategory_ExplanationNotEmpty(t *testing.T) {
 	if strings.TrimSpace(got.Explanation) == "" {
 		t.Fatal("объяснение расчета не должно быть пустым")
 	}
-	if !strings.Contains(got.Explanation, "Транспорт") {
-		t.Fatalf("объяснение должно упоминать главную категорию, получили: %q", got.Explanation)
+	if strings.Contains(got.Explanation, "Главная категория") {
+		t.Fatalf("объяснение не должно дублировать description карточки, получили: %q", got.Explanation)
+	}
+}
+
+func TestDetermineMainCategory_ExplanationOnlyAboutCategory(t *testing.T) {
+	b := &eventBuilder{}
+	listingTransport := intPtr(1)
+	listingRealty := intPtr(2)
+
+	events := []Event{
+		b.make(listingTransport, EventDealComplete, 1),
+		b.make(listingTransport, EventAddToFavorites, 1),
+		b.make(listingRealty, EventAddToFavorites, 1),
+	}
+	got := DetermineMainCategory(events, map[int]int{1: 4, 2: 5}, testCategories(), nil)
+
+	if strings.Contains(got.Explanation, "Самый активный месяц") {
+		t.Fatalf("объяснение главной категории не должно содержать активный месяц: %q", got.Explanation)
+	}
+	if strings.Contains(got.Explanation, "deal_completed") || strings.Contains(got.Explanation, "favorite_added") {
+		t.Fatalf("объяснение главной категории не должно содержать разбивку по событиям: %q", got.Explanation)
+	}
+	if strings.Contains(got.Explanation, "Главная категория") || strings.Contains(got.Explanation, "  - «Транспорт»") {
+		t.Fatalf("объяснение не должно дублировать главную категорию: %q", got.Explanation)
+	}
+	if !strings.Contains(got.Explanation, "  - «Недвижимость»: 3 баллов") {
+		t.Fatalf("другие категории должны оставаться в explanation: %q", got.Explanation)
 	}
 }
 

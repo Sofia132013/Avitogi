@@ -178,37 +178,14 @@ func buildExplanation(result MainCategoryResult) string {
 	}
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "Главная категория: «%s» (%d баллов).\n",
-		result.Main.CategoryName, result.Main.Score)
-	b.WriteString("Баллы по категориям (просмотр весит меньше избранного и контакта):\n")
-
-	for _, score := range result.AllScores {
-		fmt.Fprintf(&b, "  - «%s»: %d баллов", score.CategoryName, score.Score)
-		if len(score.Breakdown) > 0 {
-			fmt.Fprintf(&b, " (%s)", formatBreakdown(score.Breakdown))
-		}
-		b.WriteString("\n")
+	if len(result.AllScores) == 1 {
+		return "Других категорий в активности не найдено."
 	}
 
-	if result.MostActiveMonth != "" {
-		fmt.Fprintf(&b, "Самый активный месяц: %s.", result.MostActiveMonth)
+	b.WriteString("Другие категории:\n")
+	for _, score := range result.AllScores[1:] {
+		fmt.Fprintf(&b, "  - «%s»: %d баллов\n", score.CategoryName, score.Score)
 	}
 
 	return b.String()
-}
-
-// formatBreakdown разворачивает вклад по типам действий в стабильную строку.
-func formatBreakdown(breakdown map[string]int) string {
-	types := make([]string, 0, len(breakdown))
-	for eventType := range breakdown {
-		types = append(types, eventType)
-	}
-	sort.Strings(types)
-
-	parts := make([]string, 0, len(types))
-	for _, eventType := range types {
-		parts = append(parts, fmt.Sprintf("%s: %d", eventType, breakdown[eventType]))
-	}
-
-	return strings.Join(parts, ", ")
 }
