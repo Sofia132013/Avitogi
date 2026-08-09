@@ -1,22 +1,27 @@
-import { env } from "@/app/env"
-import { PROFILES, type ProfileId } from "@/entities/profile"
-import { Button } from "@/shared/ui"
+import { selectProfile, useProfiles, type ProfileId } from "@/entities/profile"
+import { Button, ErrorState, LoadingState } from "@/shared/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
 export function ProfileSelectPage() {
   const navigate = useNavigate()
+  const profilesQuery = useProfiles()
+
   const [selectedProfileId, setSelectedProfileId] = useState<ProfileId | null>(null)
 
-  async function handleContinue() {
-    if (!selectedProfileId) {
+  const profiles = profilesQuery.data ?? []
+
+  function handleContinue() {
+    const profileExists = profiles.some(profile => profile.id === selectedProfileId)
+
+    if (selectedProfileId === null || !profileExists) {
       return
     }
 
-    localStorage.setItem(env.VITE_PROFILE_STORAGE_KEY, selectedProfileId)
+    selectProfile(selectedProfileId)
 
-    await navigate({
+    void navigate({
       to: "/",
       replace: true,
     })
@@ -25,9 +30,7 @@ export function ProfileSelectPage() {
   return (
     <main className='relative grid min-h-dvh place-items-center overflow-x-clip bg-background px-5 py-12 text-foreground'>
       <div className='absolute -left-20 top-20 size-52 rounded-full bg-accent-purple' aria-hidden='true' />
-
       <div className='absolute -right-24 bottom-10 size-72 rounded-full bg-accent-blue' aria-hidden='true' />
-
       <section className='relative z-10 w-full max-w-4xl'>
         <div className='text-center'>
           <span className='inline-flex rounded-full bg-accent-green px-4 py-2 text-xs font-bold tracking-[0.14em] dark:text-recap uppercase'>
@@ -40,9 +43,22 @@ export function ProfileSelectPage() {
             Выберите готовый профиль.
           </p>
         </div>
-
+        {profilesQuery.isPending && <LoadingState label='Загружаем профили…' />}
+        {profilesQuery.isError && (
+          <ErrorState
+            title='Не удалось загрузить профили'
+            retry={() => {
+              void profilesQuery.refetch()
+            }}
+          />
+        )}
+        {profiles.length === 0 && (
+          <p className='mt-10 text-center max-w-xl text-base leading-relaxed dark:text-white text-recap sm:text-lg'>
+            Доступных профилей пока нет
+          </p>
+        )}
         <div className='mt-10 grid gap-4 sm:grid-cols-3'>
-          {PROFILES.map(profile => {
+          {profiles.map(profile => {
             const isSelected = selectedProfileId === profile.id
 
             return (
@@ -58,8 +74,8 @@ export function ProfileSelectPage() {
                   isSelected ? "border-foreground shadow-lg" : "border-line",
                 ].join(" ")}
               >
-                <Avatar className='size-24'>
-                  <AvatarImage src={profile.avatarUrl} alt={profile.name} />
+                <Avatar className='size-24 dark:border-recap border-2'>
+                  <AvatarImage src={String(profile.avatarUrl)} alt={profile.name} />
                   <AvatarFallback className='text-3xl font-black text-recap bg-white'>{profile.name[0]}</AvatarFallback>
                 </Avatar>
                 <span className='mt-6 text-xl font-black text-recap'>{profile.name}</span>
