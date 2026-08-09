@@ -33,7 +33,7 @@ export function ProfileSelectPage() {
       <div className='absolute -right-24 bottom-10 size-72 rounded-full bg-accent-blue' aria-hidden='true' />
       <section className='relative z-10 w-full max-w-4xl'>
         <div className='text-center'>
-          <span className='inline-flex rounded-full bg-accent-green px-4 py-2 text-xs font-bold tracking-[0.14em] dark:text-recap uppercase'>
+          <span className='inline-flex rounded-full bg-accent-green px-4 py-2 text-xs font-bold tracking-[0.14em] text-recap uppercase'>
             Выбор профиля
           </span>
 
@@ -74,8 +74,8 @@ export function ProfileSelectPage() {
                   isSelected ? "border-foreground shadow-lg" : "border-line",
                 ].join(" ")}
               >
-                <Avatar className='size-24 dark:border-recap border-2'>
-                  <AvatarImage src={String(profile.avatarUrl)} alt={profile.name} />
+                <Avatar className='size-24 border-2 border-recap'>
+                  <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} />
                   <AvatarFallback className='text-3xl font-black text-recap bg-white'>{profile.name[0]}</AvatarFallback>
                 </Avatar>
                 <span className='mt-6 text-xl font-black text-recap'>{profile.name}</span>

@@ -1,29 +1,29 @@
-import { useProfile } from "@/entities/profile"
+import { useRecap, useRecapMetrics } from "@/entities/recap"
 import { getRouteApi, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 const profileRoute = getRouteApi("/_profile")
 
-const TIMELINE = [
+const LOADING_STAGES = [
   {
     after: 100,
-    progress: 25,
+    progress: 20,
     label: "Определяем твою роль...",
   },
   {
-    after: 500,
-    progress: 55,
+    after: 450,
+    progress: 45,
     label: "Собираем достижения...",
   },
   {
     after: 900,
-    progress: 80,
-    label: "Составляем историю...",
+    progress: 70,
+    label: "Находим самое интересное...",
   },
   {
-    after: 1400,
-    progress: 100,
-    label: "Всё готово!",
+    after: 1300,
+    progress: 90,
+    label: "Составляем историю...",
   },
 ] as const
 
@@ -32,21 +32,35 @@ const INITIAL_STAGE = {
   label: "Подготавливаем итоги...",
 }
 
+const FINAL_STAGE = {
+  progress: 100,
+  label: "Всё готово!",
+}
+
+const MIN_LOADING_DURATION = 1600
+const LEAVE_DELAY = 500
+const NAVIGATION_DELAY = 800
+
 export function useRecapLoading() {
   const navigate = useNavigate()
   const { profileId } = profileRoute.useRouteContext()
 
-  const profileQuery = useProfile(profileId)
+  const recapQuery = useRecap(profileId)
+  const metricsQuery = useRecapMetrics(profileId)
 
   const [stage, setStage] = useState(INITIAL_STAGE)
+  const [minimumDurationPassed, setMinimumDurationPassed] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
 
-  useEffect(() => {
-    if (!profileQuery.isSuccess) {
-      return
-    }
+  const isError = recapQuery.isError || metricsQuery.isError
+  const error = recapQuery.error ?? metricsQuery.error
 
-    const stageTimers = TIMELINE.map(item =>
+  const isDataReady = recapQuery.isSuccess && metricsQuery.isSuccess
+  const canFinish = minimumDurationPassed && isDataReady && !isError
+  const visibleStage = canFinish ? FINAL_STAGE : stage
+
+  useEffect(() => {
+    const stageTimers = LOADING_STAGES.map(item =>
       window.setTimeout(() => {
         setStage({
           progress: item.progress,
@@ -55,34 +69,53 @@ export function useRecapLoading() {
       }, item.after),
     )
 
+    const minimumDurationTimer = window.setTimeout(() => {
+      setMinimumDurationPassed(true)
+    }, MIN_LOADING_DURATION)
+
+    return () => {
+      stageTimers.forEach(timerId => {
+        window.clearTimeout(timerId)
+      })
+
+      window.clearTimeout(minimumDurationTimer)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!canFinish) {
+      return
+    }
+
     const leaveTimer = window.setTimeout(() => {
       setIsLeaving(true)
-    }, 1700)
+    }, LEAVE_DELAY)
 
     const navigationTimer = window.setTimeout(() => {
       void navigate({
         to: "/recap",
         replace: true,
       })
-    }, 2000)
+    }, NAVIGATION_DELAY)
 
     return () => {
-      stageTimers.forEach(window.clearTimeout)
-
       window.clearTimeout(leaveTimer)
       window.clearTimeout(navigationTimer)
     }
-  }, [navigate, profileQuery.isSuccess])
+  }, [canFinish, navigate])
+
+  function retry() {
+    void Promise.all([recapQuery.refetch(), metricsQuery.refetch()])
+  }
 
   return {
-    profile: profileQuery.data,
+    isError,
+    error,
 
-    isPending: profileQuery.isPending,
-    isError: profileQuery.isError,
-    error: profileQuery.error,
-
-    progress: stage.progress,
-    label: stage.label,
+    progress: visibleStage.progress,
+    label: visibleStage.label,
     isLeaving,
+
+    retry,
   }
 }

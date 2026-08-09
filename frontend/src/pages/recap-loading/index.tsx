@@ -1,19 +1,19 @@
-import { ErrorState, LoadingState } from "@/shared/ui"
+import { ErrorState } from "@/shared/ui"
 import { useRecapLoading } from "./use-recap-loading"
 
 export function RecapLoadingPage() {
-  const { profile, isPending, isError, progress, label, isLeaving } = useRecapLoading()
+  const { isError, progress, label, isLeaving, retry } = useRecapLoading()
 
-  if (isPending) {
-    return <LoadingState label='Загружаем профиль…' />
-  }
-
-  if (isError || !profile) {
-    return <ErrorState title='Не удалось загрузить профиль' />
+  if (isError) {
+    return (
+      <main className='grid min-h-dvh place-items-center'>
+        <ErrorState title='Не удалось загрузить итоги' retry={retry} />
+      </main>
+    )
   }
 
   return (
-    <main className='fixed inset-0 z-50 grid place-items-center bg-background px-5'>
+    <main className='fixed inset-0 z-50 grid place-items-center px-5'>
       <section
         className={["w-full max-w-lg text-center", isLeaving ? "recap-page-leave" : "recap-page-enter"].join(" ")}
       >
@@ -21,12 +21,12 @@ export function RecapLoadingPage() {
           🏆
         </div>
 
-        <h1 className='mt-6 text-4xl font-black'>{profile.name}</h1>
+        <h1 className='mt-6 text-4xl font-black'>Загрузка...</h1>
 
-        <p className='mt-2 text-xl text-muted'>Персональная история</p>
+        <p className='mt-2 text-xl text-muted'>Персональной истории</p>
 
         <div
-          className='mt-10 h-2 overflow-hidden rounded-full bg-line'
+          className='mt-10 h-2 overflow-hidden rounded-full bg-recap/10 dark:bg-white/10'
           role='progressbar'
           aria-valuemin={0}
           aria-valuemax={100}

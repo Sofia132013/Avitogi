@@ -2,7 +2,7 @@ import type { RouterContext } from "@/app/router"
 import { Button, Header } from "@/shared/ui"
 import { ErrorState, LoadingState } from "@/shared/ui/state"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { createRootRouteWithContext, Link, Outlet, type ErrorComponentProps } from "@tanstack/react-router"
+import { createRootRouteWithContext, Link, Outlet, useMatches, type ErrorComponentProps } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -24,10 +24,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
+  const matches = useMatches()
+
+  const hideHeader = matches.some(match => match.staticData?.hideHeader)
+
   return (
     <>
-      <Header />
+      {!hideHeader ? <Header /> : null}
+
       <Outlet />
+
       {import.meta.env.DEV ? <TanStackRouterDevtools position='bottom-right' /> : null}
     </>
   )
