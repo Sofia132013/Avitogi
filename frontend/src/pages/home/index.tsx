@@ -1,4 +1,5 @@
 import { Button } from "@/shared/ui"
+import { Link } from "@tanstack/react-router"
 
 export function HomePage() {
   return (
@@ -18,9 +19,11 @@ export function HomePage() {
             <p className='mt-8 max-w-2xl sm:text-lg leading-relaxed dark:text-white/65 text-recap/65 md:text-xl'>
               Не сухая статистика, а история о ваших интересах, привычках и следующем полезном шаге.
             </p>
-            <Button variant='secondary' size='xl' className='mt-10'>
-              Узнать свои итоги
-            </Button>
+            <Link to='/recap/loading'>
+              <Button variant='secondary' size='xl' className='mt-10'>
+                Узнать свои итоги
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
