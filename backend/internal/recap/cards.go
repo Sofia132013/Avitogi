@@ -13,6 +13,7 @@ const (
 	CardRoleRatio     = "role_ratio"
 	CardMainCategory  = "main_category"
 	CardActivePeriod  = "active_period"
+	CardAchievements  = "achievements"
 )
 
 // Card — карточка recap для отдачи через API. Это DTO: только строки,
@@ -23,6 +24,8 @@ type Card struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Explanation string `json:"explanation,omitempty"`
+	// achievements заполняется только у карточки с ачивками
+	Achievements []Achievement `json:"achievements,omitempty"`
 }
 
 // BuildCards собирает базовый набор карточек recap в фиксированном порядке:
@@ -139,6 +142,29 @@ func activePeriodCard(mostActiveMonth string) Card {
 		Title:       "Самый активный период",
 		Description: description,
 		Explanation: explanation,
+	}
+}
+
+func achievementsCard(achievements []Achievement) Card {
+	// считаем сколько ачивок уже получено
+	earnedCount := 0
+	for _, achievement := range achievements {
+		if achievement.Earned {
+			earnedCount++
+		}
+	}
+
+	// делаем короткий текст для самой карточки
+	description := fmt.Sprintf("Получено достижений: %d из %d.", earnedCount, len(achievements))
+	explanation := "Достижения считаются по действиям пользователя за выбранный год."
+
+	// кладем весь список ачивок внутрь карточки recap
+	return Card{
+		Type:         CardAchievements,
+		Title:        "Ваши достижения",
+		Description:  description,
+		Explanation:  explanation,
+		Achievements: achievements,
 	}
 }
 

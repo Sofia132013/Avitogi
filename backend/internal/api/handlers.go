@@ -52,13 +52,13 @@ func recapHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		cards, err := recap.BuildUserRecap(db, userID, 2025)
+		result, err := recap.BuildUserRecap(db, userID, 2025)
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to build recap"})
 			return
 		}
 
-		writeJSON(w, http.StatusOK, cards)
+		writeJSON(w, http.StatusOK, result)
 	}
 }
 
@@ -95,6 +95,50 @@ func profileByIDHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		writeJSON(w, http.StatusOK, profile)
+	}
+}
+
+func profileAchievementsHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// берем id профиля из пути /profiles/{id}/achiv
+		profileID, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "profile id must be an integer"})
+			return
+		}
+
+		// проверяем, что профиль есть в базе
+		_, err = appinternal.GetProfileByID(db, profileID)
+		if errors.Is(err, appinternal.ErrProfileNotFound) {
+			writeJSON(w, http.StatusNotFound, map[string]string{"error": "profile not found"})
+			return
+		}
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to get profile"})
+			return
+		}
+
+		// читаем события этого профиля за год
+		events, err := appinternal.GetEventsByUserAndYear(db, profileID, 2025)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to get events"})
+			return
+		}
+
+		// читаем категории объявлений для ачивки по разным категориям
+		listingToCategory, err := appinternal.GetListingCategoryMap(db)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to get listings"})
+			return
+		}
+
+		// возвращаем только ачивки, без остальных карточек recap
+		achievements := recap.CalculateAchievements(
+			recap.EventsFromDB(events),
+			profileID,
+			listingToCategory,
+		)
+		writeJSON(w, http.StatusOK, achievements)
 	}
 }
 
