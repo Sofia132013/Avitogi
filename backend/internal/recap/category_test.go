@@ -168,8 +168,31 @@ func TestDetermineMainCategory_ExplanationOnlyAboutCategory(t *testing.T) {
 	if strings.Contains(got.Explanation, "Главная категория") || strings.Contains(got.Explanation, "  - «Транспорт»") {
 		t.Fatalf("объяснение не должно дублировать главную категорию: %q", got.Explanation)
 	}
-	if !strings.Contains(got.Explanation, "  - «Недвижимость»: 3 баллов") {
+	if !strings.Contains(got.Explanation, "  - «Недвижимость»: 3 балла") {
 		t.Fatalf("другие категории должны оставаться в explanation: %q", got.Explanation)
+	}
+}
+
+func TestScoreWord(t *testing.T) {
+	tests := []struct {
+		score int
+		want  string
+	}{
+		{1, "балл"},
+		{2, "балла"},
+		{4, "балла"},
+		{5, "баллов"},
+		{11, "баллов"},
+		{14, "баллов"},
+		{21, "балл"},
+		{22, "балла"},
+		{25, "баллов"},
+	}
+
+	for _, tt := range tests {
+		if got := scoreWord(tt.score); got != tt.want {
+			t.Fatalf("scoreWord(%d) = %q, want %q", tt.score, got, tt.want)
+		}
 	}
 }
 
