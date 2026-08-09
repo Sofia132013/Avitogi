@@ -184,8 +184,26 @@ func buildExplanation(result MainCategoryResult) string {
 
 	b.WriteString("Другие категории:")
 	for _, score := range result.AllScores[1:] {
-		fmt.Fprintf(&b, "  - «%s»: %d баллов", score.CategoryName, score.Score)
+		fmt.Fprintf(&b, "  - «%s»: %d %s\n", score.CategoryName, score.Score, scoreWord(score.Score))
+
 	}
 
 	return b.String()
+}
+
+// выбирает правильное окончание для слова "балл"
+func scoreWord(score int) string {
+	lastTwoDigits := score % 100
+	if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
+		return "баллов"
+	}
+
+	switch score % 10 {
+	case 1:
+		return "балл"
+	case 2, 3, 4:
+		return "балла"
+	default:
+		return "баллов"
+	}
 }
