@@ -15,6 +15,7 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("GET /recap", recapHandler(db))
 	mux.HandleFunc("GET /profiles", profilesHandler(db))
 	mux.HandleFunc("GET /profiles/{id}", profileByIDHandler(db))
+	mux.HandleFunc("POST /api/v1/profiles/{profileId}/recap", profileRecapHandler(db))
 
 	// возвращаем mux, чтобы использовать его в main
 	return mux
