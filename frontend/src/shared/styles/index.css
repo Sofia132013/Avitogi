@@ -7,7 +7,8 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  @apply bg-white dark:bg-recap dark:text-white text-recap;
+
+  @apply bg-background text-foreground;
 }
 
 * {
