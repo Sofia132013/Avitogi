@@ -1,65 +1,16 @@
-import { getSelectedProfileId, PROFILES } from "@/entities/profile"
-import { useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
-
-const TIME_LINE = [
-  {
-    after: 100,
-    progress: 25,
-    label: "Определяем твою роль...",
-  },
-  {
-    after: 500,
-    progress: 55,
-    label: "Собираем достижения...",
-  },
-  {
-    after: 900,
-    progress: 80,
-    label: "Составляем историю...",
-  },
-  {
-    after: 1400,
-    progress: 100,
-    label: "Всё готово!",
-  },
-] as const
+import { ErrorState, LoadingState } from "@/shared/ui"
+import { useRecapLoading } from "./use-recap-loading"
 
 export function RecapLoadingPage() {
-  const navigate = useNavigate()
+  const { profile, isPending, isError, progress, label, isLeaving } = useRecapLoading()
 
-  const profileId = getSelectedProfileId()
-  const profile = PROFILES.find(item => item.id === profileId)
+  if (isPending) {
+    return <LoadingState label='Загружаем профиль…' />
+  }
 
-  const [progress, setProgress] = useState(0)
-  const [label, setLabel] = useState("Подготавливаем итоги...")
-  const [isLeaving, setIsLeaving] = useState(false)
-
-  useEffect(() => {
-    const timers = TIME_LINE.map(stage =>
-      window.setTimeout(() => {
-        setProgress(stage.progress)
-        setLabel(stage.label)
-      }, stage.after),
-    )
-
-    const leaveTimer = window.setTimeout(() => {
-      setIsLeaving(true)
-    }, 1700)
-
-    const navigationTimer = window.setTimeout(() => {
-      void navigate({
-        to: "/recap",
-        replace: true,
-      })
-    }, 2000)
-
-    return () => {
-      timers.forEach(window.clearTimeout)
-      window.clearTimeout(leaveTimer)
-      window.clearTimeout(navigationTimer)
-    }
-  }, [navigate])
+  if (isError || !profile) {
+    return <ErrorState title='Не удалось загрузить профиль' />
+  }
 
   return (
     <main className='fixed inset-0 z-50 grid place-items-center bg-background px-5'>
@@ -70,7 +21,7 @@ export function RecapLoadingPage() {
           🏆
         </div>
 
-        <h1 className='mt-6 text-4xl font-black'>{profile?.name ?? "Ваш профиль"}</h1>
+        <h1 className='mt-6 text-4xl font-black'>{profile.name}</h1>
 
         <p className='mt-2 text-xl text-muted'>Персональная история</p>
 

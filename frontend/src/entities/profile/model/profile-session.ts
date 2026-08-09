@@ -1,6 +1,6 @@
 import { env } from "@/app/env"
 import { useSyncExternalStore } from "react"
-import { PROFILES, type ProfileId } from "./profiles"
+import type { ProfileId } from "./profiles"
 
 const PROFILE_STORAGE_KEY = env.VITE_PROFILE_STORAGE_KEY
 const listeners = new Set<() => void>()
@@ -10,15 +10,23 @@ function emitChange() {
 }
 
 export function getSelectedProfileId(): ProfileId | null {
-  const id = localStorage.getItem(PROFILE_STORAGE_KEY)
+  if (typeof window === "undefined") {
+    return null
+  }
 
-  const profileExists = PROFILES.some(profile => profile.id === id)
+  const storedValue = localStorage.getItem(PROFILE_STORAGE_KEY)
 
-  return profileExists ? (id as ProfileId) : null
+  if (storedValue === null) {
+    return null
+  }
+
+  const profileId = Number(storedValue)
+
+  return Number.isSafeInteger(profileId) && profileId > 0 ? profileId : null
 }
 
 export function selectProfile(id: ProfileId) {
-  localStorage.setItem(PROFILE_STORAGE_KEY, id)
+  localStorage.setItem(PROFILE_STORAGE_KEY, String(id))
   emitChange()
 }
 

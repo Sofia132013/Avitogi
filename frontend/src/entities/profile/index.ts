@@ -1,2 +1,5 @@
+export * from "./api/get-profile"
+export * from "./api/get-profiles"
+export * from "./api/profiles-query"
 export * from "./model/profile-session"
 export * from "./model/profiles"
