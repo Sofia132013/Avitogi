@@ -182,9 +182,10 @@ func buildExplanation(result MainCategoryResult) string {
 		return "Других категорий в активности не найдено."
 	}
 
-	b.WriteString("Другие категории:\n")
+	b.WriteString("Другие категории:")
 	for _, score := range result.AllScores[1:] {
 		fmt.Fprintf(&b, "  - «%s»: %d %s\n", score.CategoryName, score.Score, scoreWord(score.Score))
+
 	}
 
 	return b.String()
