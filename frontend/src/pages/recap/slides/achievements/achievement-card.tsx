@@ -32,7 +32,9 @@ export function AchievementCard({ achievement, className }: AchievementCardProps
 
         <div className='min-w-0 flex-1'>
           <div className='flex min-w-0 flex-wrap items-center justify-between gap-2'>
-            <h3 className='min-w-0 break-words text-base font-black leading-tight sm:text-lg'>{achievement.title}</h3>
+            <h3 className='min-w-0 wrap-break-word text-base font-black leading-tight sm:text-lg'>
+              {achievement.title}
+            </h3>
 
             <span
               className={cn(

@@ -1,4 +1,5 @@
 import { selectProfile, useProfiles, type ProfileId } from "@/entities/profile"
+import { cn } from "@/shared/lib"
 import { Button, ErrorState, LoadingState } from "@/shared/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { useNavigate } from "@tanstack/react-router"
@@ -52,8 +53,8 @@ export function ProfileSelectPage() {
             }}
           />
         )}
-        {profiles.length === 0 && (
-          <p className='mt-10 text-center max-w-xl text-base leading-relaxed dark:text-white text-recap sm:text-lg'>
+        {profilesQuery.isSuccess && profiles.length === 0 && (
+          <p className='mx-auto mt-10 max-w-xl text-center text-base leading-relaxed text-foreground sm:text-lg'>
             Доступных профилей пока нет
           </p>
         )}
@@ -67,23 +68,19 @@ export function ProfileSelectPage() {
                 type='button'
                 aria-pressed={isSelected}
                 onClick={() => setSelectedProfileId(profile.id)}
-                className={[
+                className={cn(
                   "flex min-h-64 flex-col items-center rounded-3xl border-2 bg-white p-6 text-center transition",
                   "hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg",
                   "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-blue",
                   isSelected ? "border-foreground shadow-lg" : "border-line",
-                ].join(" ")}
+                )}
               >
                 <Avatar className='size-24 border-2 border-recap'>
                   <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} />
                   <AvatarFallback className='text-3xl font-black text-recap bg-white'>{profile.name[0]}</AvatarFallback>
                 </Avatar>
                 <span className='mt-6 text-xl font-black text-recap'>{profile.name}</span>
-                <span
-                  className={["mt-auto pt-6 text-sm font-bold", isSelected ? "text-recap" : "text-transparent"].join(
-                    " ",
-                  )}
-                >
+                <span className={cn("mt-auto pt-6 text-sm font-bold", isSelected ? "text-recap" : "text-transparent")}>
                   Выбрано
                 </span>
               </button>
@@ -91,7 +88,7 @@ export function ProfileSelectPage() {
           })}
         </div>
         <div className='mt-8 flex justify-center'>
-          <Button size='xl' variant='primary' disabled={!selectedProfileId} onClick={handleContinue}>
+          <Button size='xl' variant='primary' disabled={selectedProfileId === null} onClick={handleContinue}>
             Продолжить
           </Button>
         </div>
