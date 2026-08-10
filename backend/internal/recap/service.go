@@ -9,6 +9,8 @@ import (
 type RecapResponse struct {
 	// cards — весь recap одним списком для фронта
 	Cards []Card `json:"cards"`
+	// recommendation — следующее действие, предлагаемое пользователю (TASK-16)
+	Recommendation Recommendation `json:"recommendation"`
 }
 
 // BuildUserRecap собирает карточки recap для пользователя за год: читает события,
@@ -48,7 +50,11 @@ func BuildUserRecap(db *sql.DB, userID int, year int) (RecapResponse, error) {
 	// добавляем ачивки как обычную карточку recap
 	cards = append(cards, achievementsCard(achievements))
 
+	// выбираем следующее действие по событиям и метрикам (TASK-16)
+	recommendation := BuildRecommendation(events, userID, metrics, mainCategory, listingToCategory)
+
 	return RecapResponse{
-		Cards: cards,
+		Cards:          cards,
+		Recommendation: recommendation,
 	}, nil
 }
