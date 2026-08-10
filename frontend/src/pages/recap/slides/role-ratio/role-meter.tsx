@@ -28,7 +28,7 @@ export function RoleMeter({ role }: RoleMeterProps) {
             {appearance.icon}
           </span>
 
-          <span className='min-w-0 wrap-break-words text-xs font-bold leading-tight min-[360px]:text-sm sm:text-base'>
+          <span className='min-w-0 wrap-break-word text-xs font-bold leading-tight min-[360px]:text-sm sm:text-base'>
             {role.label}
           </span>
         </div>

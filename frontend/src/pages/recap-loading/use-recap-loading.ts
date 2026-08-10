@@ -1,3 +1,4 @@
+import { useProfile } from "@/entities/profile"
 import { useRecap, useRecapMetrics } from "@/entities/recap"
 import { getRouteApi, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
@@ -45,17 +46,18 @@ export function useRecapLoading() {
   const navigate = useNavigate()
   const { profileId } = profileRoute.useRouteContext()
 
+  const profileQuery = useProfile(profileId)
   const recapQuery = useRecap(profileId)
   const metricsQuery = useRecapMetrics(profileId)
 
   const [stage, setStage] = useState(INITIAL_STAGE)
   const [minimumDurationPassed, setMinimumDurationPassed] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
+  const [loadingAttempt, setLoadingAttempt] = useState(0)
 
-  const isError = recapQuery.isError || metricsQuery.isError
-  const error = recapQuery.error ?? metricsQuery.error
+  const isError = profileQuery.isError || recapQuery.isError || metricsQuery.isError
+  const isDataReady = profileQuery.isSuccess && recapQuery.isSuccess && metricsQuery.isSuccess
 
-  const isDataReady = recapQuery.isSuccess && metricsQuery.isSuccess
   const canFinish = minimumDurationPassed && isDataReady && !isError
   const visibleStage = canFinish ? FINAL_STAGE : stage
 
@@ -74,13 +76,10 @@ export function useRecapLoading() {
     }, MIN_LOADING_DURATION)
 
     return () => {
-      stageTimers.forEach(timerId => {
-        window.clearTimeout(timerId)
-      })
-
+      stageTimers.forEach(window.clearTimeout)
       window.clearTimeout(minimumDurationTimer)
     }
-  }, [])
+  }, [loadingAttempt])
 
   useEffect(() => {
     if (!canFinish) {
@@ -105,12 +104,16 @@ export function useRecapLoading() {
   }, [canFinish, navigate])
 
   function retry() {
-    void Promise.all([recapQuery.refetch(), metricsQuery.refetch()])
+    setStage(INITIAL_STAGE)
+    setMinimumDurationPassed(false)
+    setIsLeaving(false)
+    setLoadingAttempt(attempt => attempt + 1)
+
+    void Promise.all([profileQuery.refetch(), recapQuery.refetch(), metricsQuery.refetch()])
   }
 
   return {
     isError,
-    error,
 
     progress: visibleStage.progress,
     label: visibleStage.label,

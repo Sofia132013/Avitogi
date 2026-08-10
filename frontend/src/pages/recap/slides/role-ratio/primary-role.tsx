@@ -34,7 +34,7 @@ export function PrimaryRole({ role }: PrimaryRoleProps) {
 
         <div className='mt-4 flex min-w-0 flex-col gap-4 min-[400px]:flex-row min-[400px]:items-end min-[400px]:justify-between'>
           <div className='min-w-0'>
-            <strong className='block wrap-break-words text-xl font-black leading-none sm:text-2xl lg:text-3xl'>
+            <strong className='block wrap-break-word text-xl font-black leading-none sm:text-2xl lg:text-3xl'>
               {role.label}
             </strong>
 

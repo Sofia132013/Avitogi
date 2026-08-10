@@ -1,3 +1,5 @@
+import { cn } from "@/shared/lib"
+
 interface RecapProgressProps {
   currentSlide: number
   totalSlides: number
@@ -19,10 +21,10 @@ export function RecapProgress({ currentSlide, totalSlides }: RecapProgressProps)
         return (
           <span
             key={index}
-            className={[
+            className={cn(
               "h-1 flex-1 rounded-full transition-colors",
               isCompleted ? "bg-recap dark:bg-white" : "bg-recap/15 dark:bg-white/20",
-            ].join(" ")}
+            )}
             aria-hidden='true'
           />
         )
