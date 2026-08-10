@@ -295,7 +295,8 @@ Frontend запускается через Nginx и показывает кар�
 │   ├── src              # react-приложение
 │   ├── public           # статические файлы
 │   ├── Dockerfile
-│   └── nginx.conf
+│   ├── nginx.conf
+│   └── README.md        # подробное описание frontend-части
 ├── docker-compose.yml
 └── README.md
 ```
@@ -431,6 +432,7 @@ GOCACHE=/tmp/go-build-cache go test ./...
 ```bash
 cd frontend
 bun install
+bun run test
 bun run lint
 bun run build
 ```
@@ -480,6 +482,7 @@ bun run build
 - реализация экранов recap и навигации между слайдами;
 - реализация frontend-карточек: intro, год в цифрах, роль, главная категория, активный период, достижения, рекомендация следующего действия;
 - добавление UI-компонентов, стилей, анимаций и адаптивной верстки;
+- добавление unit-тестов для frontend-моделей профиля и recap;
 - подготовка production-сборки frontend через Docker и Nginx.
 
 #### Николаева Арина
