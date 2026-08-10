@@ -39,7 +39,7 @@ export function RecapPage() {
 
   return (
     <RecapSlideRenderer
-      card={recap.currentCard}
+      slide={recap.currentSlideData}
       profile={recap.profile}
       metrics={recap.metrics}
       year={RECAP_YEAR}

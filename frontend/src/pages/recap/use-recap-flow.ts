@@ -1,10 +1,10 @@
 import { useProfile, type Profile } from "@/entities/profile"
-import { useRecap, useRecapMetrics, type RecapCard, type RecapMetrics } from "@/entities/recap"
+import { useRecap, useRecapMetrics, type RecapMetrics, type RecapResponse } from "@/entities/recap"
 import { getRouteApi } from "@tanstack/react-router"
 import { useState } from "react"
+import type { RecapSlideData, RecommendationSlideData } from "./recap-slide.types"
 
 const profileRoute = getRouteApi("/_profile")
-const EMPTY_CARDS: RecapCard[] = []
 
 interface PendingRecapFlow {
   status: "pending"
@@ -24,7 +24,7 @@ interface ReadyRecapFlow {
 
   profile: Profile
   metrics: RecapMetrics
-  currentCard: RecapCard
+  currentSlideData: RecapSlideData
 
   currentSlide: number
   totalSlides: number
@@ -35,6 +35,21 @@ interface ReadyRecapFlow {
 
 type RecapFlowState = PendingRecapFlow | ErrorRecapFlow | EmptyRecapFlow | ReadyRecapFlow
 
+const EMPTY_SLIDES: RecapSlideData[] = []
+
+function createRecapSlides(recap: RecapResponse | undefined): RecapSlideData[] {
+  if (!recap) {
+    return EMPTY_SLIDES
+  }
+
+  const recommendationSlide: RecommendationSlideData = {
+    type: "recommendation",
+    recommendation: recap.recommendation,
+  }
+
+  return [...recap.cards, recommendationSlide]
+}
+
 export function useRecapFlow(): RecapFlowState {
   const { profileId } = profileRoute.useRouteContext()
 
@@ -44,12 +59,13 @@ export function useRecapFlow(): RecapFlowState {
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
 
-  const cards = recapQuery.data?.cards ?? EMPTY_CARDS
-  const lastSlideIndex = Math.max(cards.length - 1, 0)
+  const slides = createRecapSlides(recapQuery.data)
+
+  const lastSlideIndex = Math.max(slides.length - 1, 0)
 
   const visibleSlideIndex = Math.min(currentSlideIndex, lastSlideIndex)
 
-  const currentCard = cards[visibleSlideIndex]
+  const currentSlideData = slides[visibleSlideIndex]
 
   function goToNextSlide() {
     setCurrentSlideIndex(currentIndex => Math.min(currentIndex + 1, lastSlideIndex))
@@ -80,7 +96,7 @@ export function useRecapFlow(): RecapFlowState {
     }
   }
 
-  if (!profileQuery.data || !metricsQuery.data || !currentCard) {
+  if (!profileQuery.data || !metricsQuery.data || !currentSlideData) {
     return {
       status: "empty",
     }
@@ -91,10 +107,10 @@ export function useRecapFlow(): RecapFlowState {
 
     profile: profileQuery.data,
     metrics: metricsQuery.data,
-    currentCard,
+    currentSlideData,
 
     currentSlide: visibleSlideIndex + 1,
-    totalSlides: cards.length,
+    totalSlides: slides.length,
 
     goToNextSlide,
     goToPreviousSlide,

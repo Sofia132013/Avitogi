@@ -1,4 +1,11 @@
-import type { RecapCard } from "@/entities/recap"
+import type { RecapCard, Recommendation } from "@/entities/recap"
+
+export interface RecommendationSlideData {
+  type: "recommendation"
+  recommendation: Recommendation
+}
+
+export type RecapSlideData = RecapCard | RecommendationSlideData
 
 export interface RecapSlideMetaProps {
   year: number

@@ -1,10 +1,10 @@
 import type { AchievementsRecapCard } from "@/entities/recap"
-import type { FinalRecapSlideProps } from "../../recap-slide.types"
+import type { NavigableRecapSlideProps } from "../../recap-slide.types"
 import { RecapExplanation, RecapSlideHeading, RecapSlideNavigation, RecapSlideShell } from "../../ui"
 import { AchievementCard } from "./achievement-card"
 import { AchievementSummary } from "./achievement-summary"
 
-type AchievementsSlideProps = FinalRecapSlideProps<AchievementsRecapCard>
+type AchievementsSlideProps = NavigableRecapSlideProps<AchievementsRecapCard>
 
 export function AchievementsSlide({
   card,
@@ -12,7 +12,7 @@ export function AchievementsSlide({
   currentSlide,
   totalSlides,
   onPrevious,
-  onFinish,
+  onNext,
 }: AchievementsSlideProps) {
   const earnedCount = card.achievements.filter(achievement => achievement.earned).length
 
@@ -37,13 +37,11 @@ export function AchievementsSlide({
           />
         </>
       }
-      navigation={
-        <RecapSlideNavigation onPrevious={onPrevious} onPrimary={onFinish} primaryLabel='Завершить' primaryIcon='✓' />
-      }
+      navigation={<RecapSlideNavigation onPrevious={onPrevious} onPrimary={onNext} />}
     >
       <section className='grid min-w-0 flex-1 items-center gap-8 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:gap-14'>
         <div className='min-w-0'>
-          <RecapSlideHeading badge='Финал' title={card.title} accent='purple' />
+          <RecapSlideHeading badge={`${currentSlide} из ${totalSlides}`} title={card.title} accent='purple' />
 
           <div className='mt-5'>
             <AchievementSummary earnedCount={earnedCount} totalCount={totalCount} />
