@@ -1,3 +1,4 @@
+import { exitProfile } from "@/entities/profile"
 import { ErrorState, LoadingState } from "@/shared/ui"
 import { useNavigate } from "@tanstack/react-router"
 import { RecapSlideRenderer } from "./recap-slide-renderer"
@@ -10,7 +11,12 @@ export function RecapPage() {
   const navigate = useNavigate()
 
   function finishRecap() {
-    void navigate({ to: "/" })
+    exitProfile()
+
+    void navigate({
+      to: "/profiles",
+      replace: true,
+    })
   }
 
   if (recap.status === "error") {
@@ -39,7 +45,7 @@ export function RecapPage() {
 
   return (
     <RecapSlideRenderer
-      card={recap.currentCard}
+      slide={recap.currentSlideData}
       profile={recap.profile}
       metrics={recap.metrics}
       year={RECAP_YEAR}

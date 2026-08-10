@@ -1,17 +1,19 @@
 import type { Profile } from "@/entities/profile"
-import type { RecapCard, RecapMetrics } from "@/entities/recap"
+import type { RecapMetrics } from "@/entities/recap"
 import { ErrorState } from "@/shared/ui"
-import type { RecapSlideProps } from "./recap-slide.types"
+import type { RecapSlideData, RecapSlideMetaProps } from "./recap-slide.types"
 import {
   AchievementsSlide,
   ActivePeriodSlide,
   IntroSlide,
   MainCategorySlide,
+  RecommendationSlide,
   RoleRatioSlide,
   YearInNumbersSlide,
 } from "./slides"
 
-type RecapSlideRendererProps = RecapSlideProps<RecapCard> & {
+interface RecapSlideRendererProps extends RecapSlideMetaProps {
+  slide: RecapSlideData
   profile: Profile
   metrics: RecapMetrics
   onPrevious: () => void
@@ -20,7 +22,7 @@ type RecapSlideRendererProps = RecapSlideProps<RecapCard> & {
 }
 
 export function RecapSlideRenderer({
-  card,
+  slide,
   profile,
   metrics,
   year,
@@ -41,24 +43,36 @@ export function RecapSlideRenderer({
     onNext,
   }
 
-  switch (card.type) {
+  switch (slide.type) {
     case "intro":
-      return <IntroSlide {...slideMeta} card={card} profile={profile} onNext={onNext} />
+      return <IntroSlide {...slideMeta} card={slide} profile={profile} onNext={onNext} />
 
     case "year_in_numbers":
-      return <YearInNumbersSlide {...slideMeta} {...navigation} card={card} metrics={metrics} />
+      return <YearInNumbersSlide {...slideMeta} {...navigation} card={slide} metrics={metrics} />
 
     case "role_ratio":
-      return <RoleRatioSlide {...slideMeta} {...navigation} card={card} />
+      return <RoleRatioSlide {...slideMeta} {...navigation} card={slide} />
 
     case "main_category":
-      return <MainCategorySlide {...slideMeta} {...navigation} card={card} />
+      return <MainCategorySlide {...slideMeta} {...navigation} card={slide} />
 
     case "active_period":
-      return <ActivePeriodSlide {...slideMeta} {...navigation} card={card} mostActiveMonth={metrics.mostActiveMonth} />
+      return <ActivePeriodSlide {...slideMeta} {...navigation} card={slide} mostActiveMonth={metrics.mostActiveMonth} />
 
     case "achievements":
-      return <AchievementsSlide {...slideMeta} card={card} onPrevious={onPrevious} onFinish={onFinish} />
+      return <AchievementsSlide {...slideMeta} card={slide} onPrevious={onPrevious} onNext={onNext} />
+
+    case "recommendation":
+      return (
+        <RecommendationSlide
+          recommendation={slide.recommendation}
+          year={year}
+          currentSlide={currentSlide}
+          totalSlides={totalSlides}
+          onPrevious={onPrevious}
+          onFinish={onFinish}
+        />
+      )
 
     default:
       return (
