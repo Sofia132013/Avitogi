@@ -7,7 +7,6 @@ type HeadingSize = "default" | "large"
 interface RecapSlideHeadingProps {
   badge: ReactNode
   title: string
-  description?: string
   accent?: HeadingAccent
   size?: HeadingSize
   className?: string
@@ -28,7 +27,6 @@ const sizeClasses: Record<HeadingSize, string> = {
 export function RecapSlideHeading({
   badge,
   title,
-  description,
   accent = "blue",
   size = "default",
   className,
@@ -52,10 +50,6 @@ export function RecapSlideHeading({
       >
         {title}
       </h1>
-
-      {description && (
-        <p className='mt-4 max-w-xl text-base font-medium leading-relaxed text-muted sm:text-lg'>{description}</p>
-      )}
     </div>
   )
 }

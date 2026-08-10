@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib"
 import { ErrorState } from "@/shared/ui"
 import { useRecapLoading } from "./use-recap-loading"
 
@@ -14,9 +15,7 @@ export function RecapLoadingPage() {
 
   return (
     <main className='fixed inset-0 z-50 grid place-items-center px-5'>
-      <section
-        className={["w-full max-w-lg text-center", isLeaving ? "recap-page-leave" : "recap-page-enter"].join(" ")}
-      >
+      <section className={cn("w-full max-w-lg text-center", isLeaving ? "recap-page-leave" : "recap-page-enter")}>
         <div className='text-7xl' aria-hidden='true'>
           🏆
         </div>
