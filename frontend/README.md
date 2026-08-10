@@ -143,6 +143,8 @@ VITE_PROFILE_STORAGE_KEY=avitogi:selected-profile
 | `bun run build`          | Проверить TypeScript и создать production-сборку              |
 | `bun run preview`        | Локально запустить предварительный просмотр production-сборки |
 | `bun run lint`           | Запустить ESLint                                              |
+| `bun run test`           | Запустить все unit-тесты один раз                             |
+| `bun run test:watch`     | Запустить unit-тесты в режиме наблюдения за файлами           |
 | `bun run prettier:check` | Проверить форматирование кода                                 |
 | `bun run prettier:write` | Отформатировать файлы проекта                                 |
 
