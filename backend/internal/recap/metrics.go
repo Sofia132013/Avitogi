@@ -1,17 +1,23 @@
 package recap
 
-import "time"
+import (
+	"strconv"
+	"time"
+
+	appinternal "avitogi/backend/internal"
+)
 
 const (
-	EventViewAd         = "view_ad"
-	EventViewCategory   = "view_category"
-	EventAddToFavorites = "add_to_favorites"
-	EventStartContact   = "start_contact"
-	EventCreateAd       = "create_ad"
+	EventViewAd         = "listing_viewed"
+	EventViewCategory   = "category_viewed"
+	EventAddToFavorites = "favorite_added"
+	EventStartContact   = "seller_contact_started"
+	EventCreateAd       = "listing_published"
 )
 
 type Event struct {
 	UserID    int       `json:"user_id"`
+	ListingID *int      `json:"listing_id,omitempty"`
 	Type      string    `json:"type"`
 	Timestamp time.Time `json:"timestamp"`
 	EventID   string    `json:"event_id,omitempty"`
@@ -26,6 +32,23 @@ type Metrics struct {
 	ContactsStarted  int    `json:"contacts_started"`
 	CreatedAds       int    `json:"created_ads"`
 	MostActiveMonth  string `json:"most_active_month"`
+}
+
+func EventsFromDB(events []appinternal.Event) []Event {
+	// приводим события из базы к формату, который использует расчет метрик
+	result := make([]Event, 0, len(events))
+
+	for _, event := range events {
+		result = append(result, Event{
+			UserID:    event.UserID,
+			ListingID: event.ListingID,
+			Type:      event.Type,
+			Timestamp: event.Timestamp,
+			EventID:   strconv.Itoa(event.ID),
+		})
+	}
+
+	return result
 }
 
 func CalculateMetrics(events []Event, userID int) Metrics {
@@ -79,6 +102,27 @@ func CalculateMetrics(events []Event, userID int) Metrics {
 	metrics.MostActiveMonth = mostActiveMonth(eventsByMonth)
 
 	return metrics
+}
+
+// MostActiveMonth определяет самый активный месяц (формат "2006-01") по списку
+// событий. Дубли с одинаковым EventID учитываются один раз, как и в CalculateMetrics.
+func MostActiveMonth(events []Event) string {
+	eventsByMonth := make(map[string]int)
+	seenEventIDs := make(map[string]struct{})
+
+	for _, event := range events {
+		if event.EventID != "" {
+			if _, exists := seenEventIDs[event.EventID]; exists {
+				continue
+			}
+			seenEventIDs[event.EventID] = struct{}{}
+		}
+
+		month := event.Timestamp.Format("2006-01")
+		eventsByMonth[month]++
+	}
+
+	return mostActiveMonth(eventsByMonth)
 }
 
 func mostActiveMonth(eventsByMonth map[string]int) string {

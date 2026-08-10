@@ -1,12 +1,14 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "./animations.css";
 
 :root {
   font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  @apply bg-white dark:bg-recap dark:text-white text-recap;
+
+  @apply bg-background text-foreground;
 }
 
 * {

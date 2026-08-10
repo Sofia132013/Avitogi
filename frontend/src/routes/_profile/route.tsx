@@ -5,23 +5,21 @@ export const Route = createFileRoute("/_profile")({
   beforeLoad: () => {
     const profileId = getSelectedProfileId()
 
-    if (!profileId) {
+    if (profileId === null) {
       throw redirect({
         to: "/profiles",
         replace: true,
       })
     }
 
-    return { profileId }
+    return {
+      profileId,
+    }
   },
 
   component: ProfileLayout,
 })
 
 function ProfileLayout() {
-  return (
-    <>
-      <Outlet />
-    </>
-  )
+  return <Outlet />
 }
