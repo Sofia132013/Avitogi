@@ -2,14 +2,37 @@ openapi: 3.0.3
 
 info:
   title: Avitogi Backend API
-  version: 0.1.0
-  description: API для backend сервиса проекта Авитоги.
+  version: 1.0.0
+  description: |
+    API backend сервиса проекта Авитоги — «Итоги года» для пользователя Авито.
+
+    Бэкенд читает события тестового профиля за год и отдаёт готовый recap:
+    карточки (год в цифрах, роли, главная категория, активный период, достижения)
+    и одну рекомендацию следующего действия.
+
+    Год расчёта сейчас зафиксирован в коде — 2025.
+
+servers:
+  - url: http://localhost:8090
+    description: Локальный запуск через docker compose
+  - url: http://localhost:8080
+    description: Локальный запуск backend напрямую (go run)
+
+tags:
+  - name: Служебные
+    description: Проверка работоспособности сервиса
+  - name: Профили
+    description: Тестовые профили пользователей
+  - name: Recap
+    description: Итоги года и метрики
 
 paths:
   /health:
     get:
+      tags: [Служебные]
+      operationId: getHealth
       summary: Проверка работы backend
-      description: Возвращает статус сервера.
+      description: Возвращает статус сервера. Используется для health-check в Docker Compose.
       responses:
         "200":
           description: Backend работает
@@ -21,3 +44,373 @@ paths:
                   status:
                     type: string
                     example: ok
+
+  /profiles:
+    get:
+      tags: [Профили]
+      operationId: getProfiles
+      summary: Список тестовых профилей
+      description: Возвращает все тестовые профили — из них пользователь выбирает, чьи итоги смотреть.
+      responses:
+        "200":
+          description: Список профилей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+              example:
+                - id: 1
+                  name: Максим
+                  avatar_url: null
+                  registered_at: "2024-01-12T10:00:00Z"
+                  rating: 16
+                  created_at: "2025-01-01T00:00:00Z"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /profiles/{id}:
+    get:
+      tags: [Профили]
+      operationId: getProfileById
+      summary: Профиль по ID
+      description: Возвращает один тестовый профиль. Если профиля нет — отдельная ошибка 404, а не общая 500.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID профиля
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Профиль найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          description: ID профиля не является числом
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: profile id must be an integer
+        "404":
+          description: Профиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: profile not found
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /metrics:
+    get:
+      tags: [Recap]
+      operationId: getMetrics
+      summary: Метрики пользователя за год
+      description: |
+        Считает метрики активности по событиям пользователя за 2025 год:
+        активные дни и месяцы, просмотры, избранное, контакты, публикации,
+        самый активный месяц.
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: Метрики посчитаны
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Metrics"
+        "400":
+          $ref: "#/components/responses/BadUserID"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /recap:
+    get:
+      tags: [Recap]
+      operationId: getRecap
+      summary: Итоги года пользователя
+      description: |
+        Главный эндпоинт. Возвращает готовый recap за 2025 год:
+
+        * `cards` — карточки в фиксированном порядке: вступление, год в цифрах,
+          соотношение ролей, главная категория, активный период, достижения;
+        * `recommendation` — одно следующее действие для пользователя.
+
+        Рекомендация не бывает пустой: если незавершённой истории и заметного
+        покупательского интереса нет, возвращается безопасная общая рекомендация
+        `CREATE_LISTING`.
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: Recap собран
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecapResponse"
+              example:
+                cards:
+                  - type: intro
+                    title: Ваш год на Авито
+                    description: "Мы собрали, каким был ваш год: сделки, находки и любимые категории."
+                  - type: year_in_numbers
+                    title: Год в цифрах
+                    description: "За год: 12 активных дней, 8 просмотров объявлений, 1 в избранном, 0 обращений к продавцам."
+                    explanation: "Активность за год: дней с действиями — 12, активных месяцев — 11, просмотрено объявлений — 8."
+                  - type: achievements
+                    title: Ваши достижения
+                    description: "Получено достижений: 1 из 5."
+                    explanation: Достижения считаются по действиям пользователя за выбранный год.
+                    achievements:
+                      - code: precise_choice
+                        title: Точный выбор
+                        description: Добавить в избранное минимум 2 объявления.
+                        earned: false
+                recommendation:
+                  type: OPEN_FAVORITES
+                  title: Вернитесь к избранному
+                  reason: В избранном есть объявление, по которому можно написать продавцу.
+                  listing_id: 8
+        "400":
+          $ref: "#/components/responses/BadUserID"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    UserID:
+      name: user_id
+      in: query
+      required: true
+      description: ID пользователя, для которого считаются итоги
+      schema:
+        type: integer
+        example: 1
+
+  responses:
+    BadUserID:
+      description: Параметр user_id не передан или не является числом
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            missing:
+              summary: Параметр не передан
+              value:
+                error: user_id is required
+            notInteger:
+              summary: Параметр не число
+              value:
+                error: user_id must be an integer
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: failed to build recap
+
+  schemas:
+    Error:
+      type: object
+      description: Единый формат ошибки для всех эндпоинтов
+      properties:
+        error:
+          type: string
+          description: Текст ошибки
+          example: profile not found
+
+    Profile:
+      type: object
+      description: Тестовый профиль пользователя
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Максим
+        avatar_url:
+          type: string
+          nullable: true
+          description: Ссылка на аватар, может отсутствовать
+          example: null
+        registered_at:
+          type: string
+          format: date-time
+          description: Дата регистрации на площадке
+        rating:
+          type: integer
+          description: Рейтинг пользователя
+          example: 16
+        created_at:
+          type: string
+          format: date-time
+          description: Дата создания записи в базе
+
+    Metrics:
+      type: object
+      description: Метрики активности пользователя за год
+      properties:
+        active_days:
+          type: integer
+          description: Сколько разных дней пользователь был активен
+          example: 10
+        active_months:
+          type: integer
+          description: Сколько разных месяцев пользователь был активен
+          example: 7
+        viewed_ads:
+          type: integer
+          description: Просмотрено объявлений
+          example: 4
+        viewed_categories:
+          type: integer
+          description: Просмотрено категорий
+          example: 1
+        favorites:
+          type: integer
+          description: Добавлено в избранное
+          example: 2
+        contacts_started:
+          type: integer
+          description: Начато контактов с продавцами
+          example: 2
+        created_ads:
+          type: integer
+          description: Опубликовано объявлений
+          example: 0
+        most_active_month:
+          type: string
+          description: Самый активный месяц в формате ГГГГ-ММ
+          example: "2025-01"
+
+    RecapResponse:
+      type: object
+      description: Итоги года — карточки и следующее действие
+      properties:
+        cards:
+          type: array
+          description: Карточки recap в порядке отображения
+          items:
+            $ref: "#/components/schemas/Card"
+        recommendation:
+          $ref: "#/components/schemas/Recommendation"
+
+    Card:
+      type: object
+      description: |
+        Карточка recap. Это DTO — внутренние модели базы наружу не отдаются.
+        `explanation` есть только у персональных карточек (intro общая, без него).
+      properties:
+        type:
+          type: string
+          description: Тип карточки, по нему фронт выбирает вёрстку
+          enum:
+            - intro
+            - year_in_numbers
+            - role_ratio
+            - main_category
+            - active_period
+            - achievements
+          example: year_in_numbers
+        title:
+          type: string
+          description: Заголовок карточки
+          example: Год в цифрах
+        description:
+          type: string
+          description: Текст карточки
+          example: 24 активных дня, 18 просмотренных объявлений.
+        explanation:
+          type: string
+          description: Объяснение расчёта. Только у персональных карточек
+          example: Посчитано по событиям за год.
+        achievements:
+          type: array
+          description: Список достижений. Только у карточки с типом achievements
+          items:
+            $ref: "#/components/schemas/Achievement"
+
+    Achievement:
+      type: object
+      description: Достижение пользователя за год
+      properties:
+        code:
+          type: string
+          description: Машинный код достижения
+          enum:
+            - precise_choice
+            - in_touch
+            - year_showcase
+            - deal_closed
+            - wide_route
+          example: precise_choice
+        title:
+          type: string
+          example: Точный выбор
+        description:
+          type: string
+          description: Условие получения
+          example: Добавить в избранное минимум 2 объявления.
+        earned:
+          type: boolean
+          description: Получено ли достижение
+          example: true
+
+    Recommendation:
+      type: object
+      description: |
+        Следующее действие, предлагаемое пользователю. Выбирается каскадом:
+        сначала незавершённая история, затем сильный покупательский интерес,
+        затем безопасная общая рекомендация. Пустой не бывает.
+
+        `listing_id` и `category_id` — цели перехода, приходят не у всех типов.
+      properties:
+        type:
+          type: string
+          description: |
+            Тип действия:
+            * `CONTINUE_DRAFT` — завершить черновик объявления;
+            * `OPEN_FAVORITES` — вернуться к избранному;
+            * `OPEN_SAVED_SEARCH` — открыть сохранённый поиск;
+            * `OPEN_CATEGORY` — посмотреть категорию;
+            * `CREATE_LISTING` — разместить объявление (безопасный фолбэк).
+          enum:
+            - CONTINUE_DRAFT
+            - OPEN_FAVORITES
+            - OPEN_SAVED_SEARCH
+            - OPEN_CATEGORY
+            - CREATE_LISTING
+          example: OPEN_FAVORITES
+        title:
+          type: string
+          description: Заголовок рекомендации
+          example: Вернитесь к избранному
+        reason:
+          type: string
+          description: Причина — почему предлагается именно это действие
+          example: В избранном есть объявление, по которому можно написать продавцу.
+        listing_id:
+          type: integer
+          description: ID объявления для перехода. Приходит не всегда
+          example: 7
+        category_id:
+          type: integer
+          description: ID категории для перехода. Приходит не всегда
+          example: 1
+      required:
+        - type
+        - title
+        - reason
